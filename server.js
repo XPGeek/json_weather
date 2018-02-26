@@ -82,21 +82,28 @@ let server = http.createServer(function (weather_request, weather_response) {
     var zip_code_regex = new RegExp(/(\d\d\d\d\d)/g);
     var zip_code_matches = query.match(zip_code_regex);
 
-    console.log(zip_code_matches);
+    console.log(zip_code_matches[0]);
+
+    if(zip_code_matches === null){
+      //no zipcode matches
+      weather_response.writeHead(405, {'Content-Type': 'text/plain'});
+      weather_response.end('Zip-Code too Short!\n');
+      return;
+    }
 
     //parse the URL that we are given (or the options of the query) into things we can use
     var query_components = querystring.parse(query,'?', '=');
 
-    console.log(query_components);
+    console.log(query_components.scale);
 
     var location_json;
     var weather_json;
 
-    get_location("24060").then(function (response){
+    get_location(zip_code_matches[0]).then(function (response){
       console.log('WOEID from function: ' + response.query.results.place.woeid);
       location_json = response;
 
-      get_temperature(response.query.results.place.woeid, "").then(function (response){
+      get_temperature(response.query.results.place.woeid, query_components.scale).then(function (response){
         console.log('Temp from function: ' + response.query.results.channel.item.condition.temp);
         weather_json = response;
       });
