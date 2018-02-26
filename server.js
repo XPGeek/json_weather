@@ -79,10 +79,14 @@ let server = http.createServer(function (weather_request, weather_response) {
 
     var query = weather_request.url;
 
+    var zip_code_regex = new RegExp(/(\d\d\d\d\d)/g);
+    var zip_code_matches = query.match(zip_code_regex);
+
+    console.log(zip_code_matches);
+
     //parse the URL that we are given (or the options of the query) into things we can use
     var query_components = querystring.parse(query,'?', '=');
 
-    query_components[0] = query_components[0].replace(/\D/g,'');
     console.log(query_components);
 
     var location_json;
