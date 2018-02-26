@@ -88,9 +88,9 @@ let server = http.createServer(function (weather_request, weather_response) {
     });
 
     //notice how this prints out BEFORE the previous code due to asynchronous operations
-    console.log("fuck: " + location_json);
+    //console.log("???: " + location_json);
 
-    //console.log("fuck: " + location_json.query.results.place.woeid);
+    //console.log("dman: " + location_json.query.results.place.woeid);
 
     //weather_response.writeHead(200, {'Content-Type': 'text/plain'});
     //var weather_info = get_weather("Blacksburg, VA", "Celsius");
