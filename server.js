@@ -73,16 +73,20 @@ var get_location = function(zip_code){
 }
 
 let server = http.createServer(function (weather_request, weather_response) {
-  if( weather_request.method === 'GET' && weather_request.url.indexOf("/location") > -1) {
-
-    var location_json;
-    var weather_json;
+  if( weather_request.method === 'GET' && weather_request.url.indexOf("/locations") > -1) {
 
     console.log(weather_request.url);
 
     var query = weather_request.url;
 
-    console.log(query);
+    //parse the URL that we are given (or the options of the query) into things we can use
+    var query_components = querystring.parse(query,'?', '=');
+
+    query_components[0] = query_components[0].replace(/\D/g,'');
+    console.log(query_components);
+
+    var location_json;
+    var weather_json;
 
     get_location("24060").then(function (response){
       console.log('WOEID from function: ' + response.query.results.place.woeid);
