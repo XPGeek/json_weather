@@ -6,6 +6,10 @@ let http = require('http');
 //all external requests can use https, since all the certificates for these sites are valid
 let https = require('https');
 
+//includes the string tools for parsing and using querystring, used for parsing the URL query
+//const querystring = require('querystring');
+let querystring = require('querystring');
+
 
 //******************************************************************************************
 //  Function: get_temperature
@@ -69,12 +73,16 @@ var get_location = function(zip_code){
 }
 
 let server = http.createServer(function (weather_request, weather_response) {
-  if( weather_request.method === 'GET' ) {
+  if( weather_request.method === 'GET' && weather_request.url.indexOf("/location") > -1) {
 
     var location_json;
     var weather_json;
 
     console.log(weather_request.url);
+
+    var query = weather_request.url;
+
+    console.log(query);
 
     get_location("24060").then(function (response){
       console.log('WOEID from function: ' + response.query.results.place.woeid);
