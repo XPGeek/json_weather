@@ -23,7 +23,13 @@ var get_temperature = function (woeid, scale){
   //creates a new Promise to the support the asynchronous nature of the query
   return new Promise( function(response, reject){
 
-    var weather_url = 'https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%3D%22' + woeid +'%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys';
+    var weather_url;
+
+    if(scale === "Celsius"){
+      weather_url = 'https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%3D%22' + woeid +'%22and%20u=%22c%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys';
+    }else{
+      weather_url = 'https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%3D%22' + woeid +'%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys';
+    }
 
     https.get(weather_url, function (yahoo_response) {
       yahoo_response.setEncoding('binary');
@@ -33,9 +39,7 @@ var get_temperature = function (woeid, scale){
 				return resData += chunk;
 			});
 			yahoo_response.on('end', function () {
-        //console.log(resData);
 				var result = JSON.parse(resData);
-
 				response(result);
 			});
 
@@ -60,10 +64,7 @@ var get_location = function(zip_code){
       });
 
       location_response.on('end', function () {
-        //console.log(resData);
         var location_result = JSON.parse(location_response_data);
-        //console.log("WOEID: " + location_result.query.results.place.woeid);
-
         response(location_result);
       });
 
@@ -73,6 +74,7 @@ var get_location = function(zip_code){
 }
 
 let server = http.createServer(function (weather_request, weather_response) {
+
   if( weather_request.method === 'GET' && weather_request.url.indexOf("/locations") > -1) {
 
     console.log(weather_request.url);
@@ -86,7 +88,7 @@ let server = http.createServer(function (weather_request, weather_response) {
 
     if(zip_code_matches === null){
       //no zipcode matches
-      weather_response.writeHead(405, {'Content-Type': 'text/plain'});
+      weather_response.writeHead(405, {'Content-Type': 'application/json'});
       weather_response.end('Zip-Code too Short!\n');
       return;
     }
@@ -103,34 +105,35 @@ let server = http.createServer(function (weather_request, weather_response) {
       console.log('WOEID from function: ' + response.query.results.place.woeid);
       location_json = response;
 
-      get_temperature(response.query.results.place.woeid, query_components.scale).then(function (response){
+      get_temperature(location_json.query.results.place.woeid, query_components.scale).then(function (response){
         console.log('Temp from function: ' + response.query.results.channel.item.condition.temp);
         weather_json = response;
+
+        var scale;
+
+        if(query_components.scale === "Celsius"){
+          scale = "Celsius";
+        }else{
+          scale = "Fahrenheit";
+        }
+
+        weather_response.writeHead(200, {'Content-Type': 'application/json'});
+        weather_response.write(JSON.stringify({ temperature : weather_json.query.results.channel.item.condition.temp, "scale" : scale }));
+        weather_response.end('OK');
+
       });
 
     });
 
     //notice how this prints out BEFORE the previous code due to asynchronous operations
-    //console.log("???: " + location_json);
-
-    //console.log("dman: " + location_json.query.results.place.woeid);
-
-    //weather_response.writeHead(200, {'Content-Type': 'text/plain'});
-    //var weather_info = get_weather("Blacksburg, VA", "Celsius");
     //console.log(result.query.results.channel.item.condition.temp);
 
-    //console.log(weather_request.socket);
-  //  console.log(weather_request.statusCode);
 
-    weather_response.end('TEST');
   } else {
-    weather_response.writeHead(405, {'Content-Type': 'text/plain'});
-    weather_response.end('Method Not Allowed\n');
+    weather_response.writeHead(405, {'Content-Type': 'application/json'});
+    weather_response.end('Non-GET requests are not supported.\n');
   }
 });
 
-
-
 server.listen(8080);
-
-console.log('Server running on port 8080');
+console.log('Server online on port 8080...');
