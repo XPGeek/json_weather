@@ -140,6 +140,8 @@ let server = http.createServer(function (weather_request, weather_response) {
         //the * 1 operation on the attribute turns its type into an int
         weather_response.write(JSON.stringify({ temperature : weather_json.query.results.channel.item.condition.temp * 1, "scale" : scale }));
         weather_response.end();
+
+        console.log('PASS ZIP Code: ' + zip_code_matches[0] + ' WOEID: ' + location_json.query.results.place.woeid + ' Temperature: ' +  weather_json.query.results.channel.item.condition.temp + ' Scale: ' + scale);
       });
     });
   } else {
