@@ -84,7 +84,7 @@ let server = http.createServer(function (weather_request, weather_response) {
     var zip_code_regex = new RegExp(/(\d\d\d\d\d)/g);
     var zip_code_matches = query.match(zip_code_regex);
 
-    console.log(zip_code_matches[0]);
+    //console.log(zip_code_matches[0]);
 
     if(zip_code_matches === null){
       //no zipcode matches
@@ -118,8 +118,10 @@ let server = http.createServer(function (weather_request, weather_response) {
         }
 
         weather_response.writeHead(200, {'Content-Type': 'application/json'});
-        weather_response.write(JSON.stringify({ temperature : weather_json.query.results.channel.item.condition.temp, "scale" : scale }));
-        weather_response.end('OK');
+
+        //the * 1 operation on the attribute turns its type into an int
+        weather_response.write(JSON.stringify({ temperature : weather_json.query.results.channel.item.condition.temp * 1, "scale" : scale }));
+        weather_response.end();
 
       });
 
